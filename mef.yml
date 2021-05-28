@@ -1,0 +1,26 @@
+- name: LINUX
+  hosts: LINUX
+  gather_facts: False
+  tasks:
+
+    - name: Copiando MEF script a Maquinas remotas
+      copy: src=mef.sh
+            dest=/home/ibmadmin/mef.sh
+            remote_src=no
+            mode=0775
+
+    - name: Ejecutando MEF
+      shell: /home/ibmadmin/mef.sh
+      ignore_errors: true
+      register: ps
+
+    - debug: msg={{ ps.stdout_lines }}
+
+    - name: descargando resultados
+      shell: (ls /tmp/*.mef3)
+      register: files_to_copy
+    
+    - debug: msg={{ files_to_copy.stdout_lines }}
+    - fetch: src={{ item }} dest=/home/ibmer/ansible/mef/ flat=yes
+      with_items: "{{ files_to_copy.stdout_lines }}"
+
